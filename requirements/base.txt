@@ -1,0 +1,8 @@
+alembic
+celery[redis]
+fastapi
+httpx
+uvicorn
+pydantic
+pyjwt
+sqlalchemy

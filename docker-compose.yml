@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: ${TARGET:-dev}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/usr/src/temp_service
+    env_file:
+      - .env
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  celery-worker:
+    build: .
+    container_name: celery-worker
+    entrypoint: celery
+    command: -A temp_service.celery worker --loglevel=debug
+    volumes:
+    - .:/usr/src/temp_service
+    depends_on:
+    - redis
+    env_file:
+      - .env
+
+  celery-beat:
+    build: .
+    container_name: celery-beat
+    entrypoint: celery
+    command: -A temp_service.celery beat --loglevel=debug
+    volumes:
+    - .:/usr/src/temp_service
+    depends_on:
+    - celery-worker
+    - redis
+    env_file:
+      - .env
